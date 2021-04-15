@@ -15,7 +15,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Colors.white,
       ),
-      home: Home(),
+      home: Home(
+        categories: 'business',
+        country: 'in',
+      ),
     );
   }
 }

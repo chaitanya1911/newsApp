@@ -1,31 +1,38 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:news_app/helper/news.dart';
 import 'package:news_app/models/article_model.dart';
 import 'package:news_app/models/category_model.dart';
 import 'package:news_app/helper/data.dart';
+import 'package:news_app/widgets.dart';
 
 class Home extends StatefulWidget {
+  final String categories, country;
+
+  const Home({this.country, this.categories});
   @override
-  _HomeState createState() => _HomeState();
+  _HomeState createState() => _HomeState(country: country);
 }
 
 class _HomeState extends State<Home> {
   List<CategoryModel> categories = new List<CategoryModel>();
   List<ArticleModel> articles = new List<ArticleModel>();
   bool _loading = true;
+  final String country;
+
+  _HomeState({this.country});
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+
     categories = getCategories();
-    getNews();
+    getClassNews(widget.categories, widget.country);
   }
 
-  getNews() async {
+  getClassNews(String category, String country) async {
     News newsClass = News();
-    await newsClass.getNews();
+    await newsClass.getNews(
+        "https://newsapi.org/v2/top-headlines?country=$country&category=$category&apiKey=9477cd78b9c34c8c978b054a434eee78");
     articles = newsClass.news;
     setState(() {
       _loading = false;
@@ -35,6 +42,44 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          // Important: Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Text('Select Country'),
+              decoration: BoxDecoration(
+                color: Colors.grey,
+              ),
+            ),
+            ListTile(
+              title: Text('US'),
+              onTap: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Home(
+                              categories: 'business',
+                              country: 'us',
+                            )));
+              },
+            ),
+            ListTile(
+              title: Text('India'),
+              onTap: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Home(
+                              categories: 'business',
+                              country: 'in',
+                            )));
+              },
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -67,6 +112,7 @@ class _HomeState extends State<Home> {
                         itemCount: categories.length,
                         itemBuilder: (context, index) {
                           return CategoryTile(
+                            country: country,
                             imageUrl: categories[index].imageUrl,
                             categoryName: categories[index].categoryName,
                           );
@@ -84,6 +130,7 @@ class _HomeState extends State<Home> {
                             itemCount: articles.length,
                             itemBuilder: (context, index) {
                               return BlogTile(
+                                  url: articles[index].url,
                                   imageUrl: articles[index].urlToImage,
                                   title: articles[index].title,
                                   discription: articles[index].description);
@@ -92,87 +139,6 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
-    );
-  }
-}
-
-class CategoryTile extends StatelessWidget {
-  final String imageUrl, categoryName;
-
-  CategoryTile({this.imageUrl, this.categoryName});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-          child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              width: 120,
-              height: 60,
-              fit: BoxFit.cover,
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(right: 16),
-            alignment: Alignment.center,
-            width: 120,
-            height: 60,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              color: Colors.black26,
-            ),
-            child: Text(
-              categoryName,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      )),
-    );
-  }
-}
-
-class BlogTile extends StatelessWidget {
-  final String imageUrl, title, discription;
-
-  const BlogTile(
-      {@required this.imageUrl,
-      @required this.title,
-      @required this.discription});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(bottom: 16),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.only(top: 2),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-              ),
-            ),
-          ),
-          Padding(padding: EdgeInsets.only(top: 5)),
-          Text(
-            title,
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 17),
-          ),
-          Padding(padding: EdgeInsets.only(bottom: 2)),
-          Text(discription, style: TextStyle(color: Colors.black54)),
-        ],
-      ),
     );
   }
 }

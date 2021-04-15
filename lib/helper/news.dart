@@ -1,14 +1,11 @@
 import 'dart:convert';
-
 import 'package:news_app/models/article_model.dart';
 import 'package:http/http.dart' as http;
 
 class News {
   List<ArticleModel> news = [];
 
-  Future<void> getNews() async {
-    String url =
-        "https://newsapi.org/v2/top-headlines?country=in&category=sports&apiKey=9477cd78b9c34c8c978b054a434eee78";
+  Future<void> getNews(String url) async {
     var response = await http.get(url);
     var jsonData = jsonDecode(response.body);
     if (jsonData['status'] == 'ok') {
